@@ -29,6 +29,58 @@ function App() {
         }))
       })
   }
+
+  useEffect(() => {
+    let mounted = true
+
+    Promise.all([
+      fetchPeople(ACTORS_URL, 'actor'),
+      fetchPeople(ACTRESSES_URL, 'actress')
+    ])
+      .then(([actors, actresses]) => {
+        if (mounted) {
+          const all = [...actors, ...actresses]
+          setPeople(all)
+          setFilteredPeople(all)
+        }
+      })
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let result = people
+
+    if (typeFilter !== 'all') {
+      result = result.filter(p => p.type === typeFilter)
+    }
+
+    if (search !== '') {
+      result = result.filter(p =>
+        p.name.toLowerCase().includes(search.toLowerCase())
+      )
+    }
+
+    setFilteredPeople(result)
+  }, [search, typeFilter, people])
+
+  return (
+    <div className="container">
+      <h1>Actors</h1>
+      <h3>List of actors fetched from an API</h3>
+
+      <Filters
+        search={search}
+        setSearch={setSearch}
+        typeFilter={typeFilter}
+        setTypeFilter={setTypeFilter}
+      />
+
+      <ActorList people={filteredPeople} />
+    </div>
+  )
 }
 
 export default App
